@@ -1,0 +1,28 @@
+name: DERQ Fronend Pipeline
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+      - name: Build the derq-traffic-control-frontend
+        run: npm run build
+      - name: Build Docker image
+        run: docker build -t derq-traffic-control-frontend .
+      - name: Push Docker image
+        run: docker push repo/derq-traffic-control-frontend:latest
+      - name: Deploy to Server
+        run: |
+          ssh user@server "docker pull repo/derq-traffic-control-frontend:latest && docker run -d -p 5173:5173 repo/derq-traffic-control-frontend"
